@@ -18,8 +18,8 @@ SELECT TOP 1 T.sku,
 	SUM(CASE WHEN T.dm=11 THEN T.daily_revenue END) AS nov_sales,
 	SUM(CASE WHEN T.dm=12 THEN T.daily_revenue END) AS dec_sales,
 	dec_sales - nov_sales AS sales_increase
-FROM (
-	SELECT sku, EXTRACT(MONTH FROM saledate) AS dm, EXTRACT (YEAR FROM saledate) AS dy, COUNT(DISTINCT saledate) AS num_days, SUM(amt) AS daily_revenue
+FROM 
+	(SELECT sku, EXTRACT(MONTH FROM saledate) AS dm, EXTRACT (YEAR FROM saledate) AS dy, COUNT(DISTINCT saledate) AS num_days, SUM(amt) AS daily_revenue
 	FROM trnsact
 	WHERE stype = 'P'
 	GROUP BY sku, dm, dy
