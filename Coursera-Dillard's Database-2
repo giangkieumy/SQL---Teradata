@@ -184,5 +184,36 @@ WHERE T2.change IS NOT NULL
 ORDER BY T2.change DESC;
 
 --Q13: For each store, determine the month with the minimum average daily revenue (as defined in Teradata Week 5 Exercise Guide) . For each of the twelve months of the year, count how many stores' minimum average daily revenue was in that month. During which month(s) did over 100 stores have their minimum average daily revenue?--
+SELECT T.dm, COUNT(DISTINCT T.store)
+FROM 
+	(SELECT store, 
+		EXTRACT(MONTH FROM saledate) AS dm, 
+		EXTRACT (YEAR FROM saledate) AS dy, 
+		COUNT(DISTINCT saledate) AS num_days, 
+		SUM(amt) AS daily_revenue, 
+		daily_revenue / num_days AS avg_daily_rev, 
+		EXTRACT(YEAR FROM saledate)||EXTRACT(MONTH FROM saledate) AS dym, 
+		RANK() OVER(PARTITION BY store ORDER BY avg_daily_rev ASC) AS ranking
+		FROM trnsact
+		WHERE stype = 'P'
+		GROUP BY store, dm, dy
+		HAVING num_days >= 20 AND dym <> '2005 8') AS T
+WHERE T.ranking = 1
+GROUP BY T.dm;
 
 --Q14: Write a query that determines the month in which each store had its maximum number of sku units returned. During which month did the greatest number of stores have their maximum number of sku units returned?--
+SELECT T.dm, COUNT(DISTINCT T.store)
+FROM 
+	(SELECT store, 
+		EXTRACT(MONTH FROM saledate) AS dm, 
+		EXTRACT (YEAR FROM saledate) AS dy, 
+		COUNT(DISTINCT saledate) AS num_days, 
+		SUM(quantity) AS daily_returns, 
+		EXTRACT(YEAR FROM saledate)||EXTRACT(MONTH FROM saledate) AS dym, 
+		RANK() OVER(PARTITION BY store ORDER BY daily_returns DESC) AS ranking
+		FROM trnsact
+		WHERE stype = 'R'
+		GROUP BY store, dm, dy
+		HAVING num_days >= 20 AND dym <> '2005 8') AS T
+WHERE T.ranking = 1
+GROUP BY T.dm;
