@@ -103,10 +103,58 @@ ON msa.store = T.store
 GROUP BY ranking;
 
 --Q9: Divide stores up so that stores with msa populations between 1 and 100,000 are labeled 'very small', stores with msa populations between 100,001 and 200,000 are labeled 'small', stores with msa populations between 200,001 and 500,000 are labeled 'med_small', stores with msa populations between 500,001 and 1,000,000 are labeled 'med_large', stores with msa populations between 1,000,001 and 5,000,000 are labeled “large”, and stores with msa_population greater than 5,000,000 are labeled “very large”. What is the average daily revenue (as defined in Teradata Week 5 Exercise Guide) for a store in a “very large” population msa?--
+SELECT 	CASE 
+	WHEN msa.msa_pop >0 AND msa.msa_pop <=100000 THEN 'very small'
+	WHEN msa.msa_pop >100000 AND msa.msa_pop <=200000 THEN 'small'
+	WHEN msa.msa_pop >200000 AND msa.msa_pop <=500000 THEN 'med-small'
+	WHEN msa.msa_pop >500000 AND msa.msa_pop <=1000000 THEN 'med_large'
+ 	WHEN msa.msa_pop >1000000 AND msa.msa_pop <=5000000 THEN 'large'
+ 	WHEN msa.msa_pop >5000000 THEN 'very large'
+	END AS ranking,
+	SUM(daily_revenue) / SUM(num_days) AS avg_daily_revenue
+FROM 
+	(SELECT store, EXTRACT(MONTH FROM saledate) AS dm, EXTRACT (YEAR FROM saledate) AS dy, COUNT(DISTINCT saledate) AS num_days, SUM(amt) AS daily_revenue, EXTRACT(YEAR FROM saledate)||EXTRACT(MONTH FROM saledate) AS dym
+	FROM trnsact
+	WHERE stype = 'P'
+	GROUP BY store, dm, dy
+	HAVING num_days >= 20 AND dym <> '2005 8') AS T
+JOIN store_msa AS msa
+ON msa.store = T.store
+GROUP BY ranking
+ORDER BY avg_daily_revenue;
 
 --Q10: Which department in which store had the greatest percent increase in average daily sales revenue from November to December, and what city and state was that store located in? Only examine departments whose total sales were at least $1,000 in both November and December.--
 
 --Q11: Which department within a particular store had the greatest decrease in average daily sales revenue from August to September, and in what city and state was that store located?--
+SELECT T2.store, T2.dept, deptinfo.deptdesc, msa.city, msa.state, T2.change
+FROM 
+	(SELECT T.store, T.dept,
+		SUM(CASE WHEN T.dm=8 THEN T.num_days END) AS aug_day_sum,
+		SUM(CASE WHEN T.dm=9 THEN T.num_days END) AS sept_day_sum,
+		SUM(CASE WHEN T.dm=8 THEN T.daily_revenue END) AS aug_rev_sum,
+		SUM(CASE WHEN T.dm=9 THEN T.daily_revenue END) AS sept_rev_sum,
+		aug_rev_sum / sept_day_sum AS y,
+	 	sept_rev_sum / sept_day_sum AS x,
+		y-x AS change
+	FROM 
+		(SELECT store, skuinfo.dept,
+			EXTRACT(MONTH FROM saledate) AS dm, 
+			EXTRACT (YEAR FROM saledate) AS dy, 
+			COUNT(DISTINCT saledate) AS num_days, 
+			SUM(amt) AS daily_revenue
+		FROM trnsact
+		JOIN skuinfo
+		ON trnsact.sku = skuinfo.sku  
+		WHERE stype = 'P'
+		GROUP BY store, dept, dm, dy
+		HAVING num_days >= 20 AND dm IN (8,9) AND dy <> 2005) AS T
+	GROUP BY T.store, T.dept) AS T2
+JOIN store_msa AS msa
+ON T2.store = msa.store
+JOIN deptinfo
+ON T2.dept = deptinfo.dept
+WHERE T2.change IS NOT NULL
+ORDER BY T2.change DESC;
 
 --Q12: Identify which department, in which city and state of what store, had the greatest DECREASE in the number of items sold from August to September. How many fewer items did that department sell in September compared to August?--
 
