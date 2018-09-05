@@ -84,6 +84,23 @@ WHERE min_msa.msa_income = msa.msa_income OR max_msa.msa_income = msa.msa_income
 GROUP BY T.store
 
 --Q8: Divide the msa_income groups up so that msa_incomes between 1 and 20,000 are labeled 'low', msa_incomes between 20,001 and 30,000 are labeled 'med-low', msa_incomes between 30,001 and 40,000 are labeled 'med-high', and msa_incomes between 40,001 and 60,000 are labeled 'high'. Which of these groups has the highest average daily revenue (as defined in Teradata Week 5 Exercise Guide) per store?--
+SELECT 	CASE 
+	WHEN msa.msa_income >0 AND msa.msa_income <=20000 THEN 'low'
+	WHEN msa.msa_income >20000 AND msa.msa_income <=30000 THEN 'med-low'
+	WHEN msa.msa_income >30000 AND msa.msa_income <=40000 THEN 'med-high'
+	WHEN msa.msa_income >40000 AND msa.msa_income <=60000 THEN 'high'
+ 
+	END AS ranking,
+	SUM(daily_revenue) / SUM(num_days) AS avg_daily_revenue
+FROM 	
+	(SELECT store, EXTRACT(MONTH FROM saledate) AS dm, EXTRACT (YEAR FROM saledate) AS dy, COUNT(DISTINCT saledate) AS num_days, SUM(amt) AS daily_revenue, EXTRACT(YEAR FROM saledate)||EXTRACT(MONTH FROM saledate) AS dym
+	FROM trnsact
+	WHERE stype = 'P'
+	GROUP BY store, dm, dy
+	HAVING num_days >= 20 AND dym <> '2005 8') AS T
+JOIN store_msa AS msa
+ON msa.store = T.store
+GROUP BY ranking;
 
 --Q9: Divide stores up so that stores with msa populations between 1 and 100,000 are labeled 'very small', stores with msa populations between 100,001 and 200,000 are labeled 'small', stores with msa populations between 200,001 and 500,000 are labeled 'med_small', stores with msa populations between 500,001 and 1,000,000 are labeled 'med_large', stores with msa populations between 1,000,001 and 5,000,000 are labeled “large”, and stores with msa_population greater than 5,000,000 are labeled “very large”. What is the average daily revenue (as defined in Teradata Week 5 Exercise Guide) for a store in a “very large” population msa?--
 
