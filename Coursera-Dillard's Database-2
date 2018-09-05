@@ -157,6 +157,31 @@ WHERE T2.change IS NOT NULL
 ORDER BY T2.change DESC;
 
 --Q12: Identify which department, in which city and state of what store, had the greatest DECREASE in the number of items sold from August to September. How many fewer items did that department sell in September compared to August?--
+SELECT T2.store, T2.dept, deptinfo.deptdesc, msa.city, msa.state, T2.change
+FROM 
+	(SELECT T.store, T.dept,
+		SUM(CASE WHEN T.dm=8 THEN T.num_items END) AS aug_day_sum,
+		SUM(CASE WHEN T.dm=9 THEN T.num_items END) AS sept_day_sum,
+		aug_day_sum - sept_day_sum AS change
+	FROM 
+		(SELECT store, skuinfo.dept,
+			EXTRACT(MONTH FROM saledate) AS dm, 
+			EXTRACT (YEAR FROM saledate) AS dy, 
+			COUNT(DISTINCT saledate) AS num_days, 
+			SUM(quantity) AS num_items
+		FROM trnsact
+		JOIN skuinfo
+		ON trnsact.sku = skuinfo.sku  
+		WHERE stype = 'P'
+		GROUP BY store, dept, dm, dy
+		HAVING num_days >= 20 AND dm IN (8,9) AND dy <> 2005) AS T
+	GROUP BY T.store, T.dept) AS T2
+JOIN store_msa AS msa
+ON T2.store = msa.store
+JOIN deptinfo
+ON T2.dept = deptinfo.dept
+WHERE T2.change IS NOT NULL
+ORDER BY T2.change DESC;
 
 --Q13: For each store, determine the month with the minimum average daily revenue (as defined in Teradata Week 5 Exercise Guide) . For each of the twelve months of the year, count how many stores' minimum average daily revenue was in that month. During which month(s) did over 100 stores have their minimum average daily revenue?--
 
