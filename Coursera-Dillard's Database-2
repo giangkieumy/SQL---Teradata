@@ -61,6 +61,27 @@ JOIN store_msa AS msa
 ON T2.store = msa.store;
 
 --Q7: Compare the average daily revenue (as defined in Teradata Week 5 Exercise Guide) of the store with the highest msa_income and the store with the lowest median msa_income (according to the msa_income field). In what city and state were these two stores, and which store had a higher average daily revenue?--
+SELECT DISTINCT T.store, MAX(max_msa.msa_income) AS max_income, MIN(min_msa.msa_income) AS min_income, MAX(msa.city), MAX(msa.state), MAX(msa.msa_income), SUM(daily_revenue) / SUM(num_days) AS avg_daily_revenue
+FROM 
+	(SELECT store, EXTRACT(MONTH FROM saledate) AS dm, EXTRACT (YEAR FROM saledate) AS dy, COUNT(DISTINCT saledate) AS num_days, SUM(amt) AS daily_revenue, EXTRACT(YEAR FROM saledate)||EXTRACT(MONTH FROM saledate) AS dym
+	FROM trnsact
+	WHERE stype = 'P'
+	GROUP BY store, dm, dy
+	HAVING num_days >= 20 AND dym <> '2005 8') AS T
+JOIN store_msa AS msa
+ON msa.store = T.store
+LEFT JOIN  
+	(SELECT TOP 1 store, msa_income
+	FROM store_msa
+	ORDER BY msa_income DESC) AS max_msa
+ON max_msa.store = T.store 
+LEFT JOIN  
+	(SELECT TOP 1 store, msa_income
+	FROM store_msa
+	ORDER BY msa_income ASC) AS min_msa
+ON min_msa.store = T.store 
+WHERE min_msa.msa_income = msa.msa_income OR max_msa.msa_income = msa.msa_income
+GROUP BY T.store
 
 --Q8: Divide the msa_income groups up so that msa_incomes between 1 and 20,000 are labeled 'low', msa_incomes between 20,001 and 30,000 are labeled 'med-low', msa_incomes between 30,001 and 40,000 are labeled 'med-high', and msa_incomes between 40,001 and 60,000 are labeled 'high'. Which of these groups has the highest average daily revenue (as defined in Teradata Week 5 Exercise Guide) per store?--
 
