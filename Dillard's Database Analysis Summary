@@ -13,7 +13,6 @@ FROM TRNSACT t
 INNER JOIN SKSTINFO s
 ON t.sku = s.sku AND t.store = s.store
 WHERE stype = 'P';
-The result shows that 
 
 2. What department (with department description), brand, style, and color brought in the greatest total amount of sales?--
 SELECT TOP 3 d.dept, d.deptdesc, s.brand, s.style, s.color, SUM(t.amt)
