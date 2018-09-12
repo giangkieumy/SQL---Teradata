@@ -66,7 +66,7 @@ GROUP BY ranking;
 between 100,001 and 200,000 are labeled 'small', stores with msa populations between 200,001 and 500,000 are labeled 'med_small', 
 stores with msa populations between 500,001 and 1,000,000 are labeled 'med_large', stores with msa populations between 1,000,001 and 
 5,000,000 are labeled “large”, and stores with msa_population greater than 5,000,000 are labeled “very large”. What is the average 
-daily revenue (as defined in Teradata Week 5 Exercise Guide) for a store in a “very large” population msa?--
+daily revenue for a store in a “very large” population msa?--
 SELECT CASE 
 	WHEN msa.msa_pop >0 AND msa.msa_pop <=100000 THEN 'very small'
 	WHEN msa.msa_pop >100000 AND msa.msa_pop <=200000 THEN 'small'
@@ -87,8 +87,9 @@ ON msa.store = T.store
 GROUP BY ranking
 ORDER BY avg_daily_revenue;
 
-7. For each store, determine the month with the minimum average daily revenue (as defined in Teradata Week 5 Exercise Guide) . 
-For each of the twelve months of the year, count how many stores' minimum average daily revenue was in that month. During which month(s) did over 100 stores have their minimum average daily revenue?--
+7. For each store, determine the month with the minimum average daily revenue 
+For each of the twelve months of the year, count how many stores' minimum average daily revenue was in that month. 
+During which month(s) did over 100 stores have their minimum average daily revenue?--
 SELECT T.dm, COUNT(DISTINCT T.store)
 FROM 
 	(SELECT store, 
