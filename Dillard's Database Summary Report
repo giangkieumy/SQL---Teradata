@@ -3,8 +3,9 @@ This mini project focused on analyzing sales performance and patterns of Dillard
 to look at profits and sales trends across stores in different cities and states, departments, months, groups of population to identify 
 if there are any specific departments, stores, or period of time or group of population which can be related with better or worse sales 
 performance. 
-In addition, the 
-
+Nevertheless, according to the course guideline, there is some missing data in this database with unknown reasons from Dillard. Therefore, 
+in the below queries, average daily revenue is calculated by only examining purchases (not returns), excluding all stores with less 
+than 20 days of data, excluding all data from August, 2005.
 
 1. What is the average amount of profit Dillard’s made per day? --
 SELECT SUM(t.amt - (s.cost*t.quantity)) prof, COUNT(DISTINCT t.saledate) totalday, prof/totalday avg_profit
@@ -12,6 +13,7 @@ FROM TRNSACT t
 INNER JOIN SKSTINFO s
 ON t.sku = s.sku AND t.store = s.store
 WHERE stype = 'P';
+The result shows that 
 
 2. What department (with department description), brand, style, and color brought in the greatest total amount of sales?--
 SELECT TOP 3 d.dept, d.deptdesc, s.brand, s.style, s.color, SUM(t.amt)
