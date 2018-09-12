@@ -1,7 +1,8 @@
 This mini project focused on analyzing sales performance and patterns of Dillard Department store by retreiving data from over 
-100 million rows with 6 tables. There are various ways to approach sales performance and trends. However, in this project we are going 
-to look at profits and sales trends across stores in different cities and states, departments and months to determine if there are 
-specific stores, departments, or times of year that are associated with better or worse sales performance. 
+100 million rows with 6 tables. There are various ways to approach sales performance and trends. However, in this project, we are going 
+to look at profits and sales trends across stores in different cities and states, departments, months, groups of population to identify 
+if there are any specific departments, stores, or period of time or group of population which can be related with better or worse sales 
+performance. 
 In addition, the 
 
 
